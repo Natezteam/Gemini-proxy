@@ -5,25 +5,33 @@ import requests
 
 app = FastAPI()
 
+# Разрешаем CORS (например, для Netlify, Telegram и т.д.)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+
 @app.post("/gemini")
 async def chat(request: Request):
     body = await request.json()
-    print("BODY:", body)  # 👈 ЛОГ — ОЧЕНЬ ВАЖЕН
+    print("BODY:", body)
 
     user_question = body.get("question", "")
-
     headers = {
         "Content-Type": "application/json"
     }
-
     payload = {
         "contents": [
             {"parts": [{"text": user_question}]}
         ]
     }
 
-  GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
     response = requests.post(f"{GEMINI_API_URL}?key={GEMINI_API_KEY}", json=payload, headers=headers)
 
     if response.status_code == 200:
@@ -31,8 +39,10 @@ GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini
         try:
             answer = data["candidates"][0]["content"]["parts"][0]["text"]
         except (KeyError, IndexError):
-            answer = "Ошибка: пустой ответ от Gemini."
+            answer = "⚠️ Gemini ответ пустой."
     else:
-        print("DEBUG GEMINI ERROR:", response.text)  # 👈 Покажи ответ, если ошибка
+        print("ERROR RESPONSE:", response.text)
         answer = f"Ошибка Gemini API: {response.status_code}"
+
+    return {"answer": answer}
 
