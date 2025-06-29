@@ -22,6 +22,8 @@ async def chat(request: Request):
         ]
     }
 
+  GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
     response = requests.post(f"{GEMINI_API_URL}?key={GEMINI_API_KEY}", json=payload, headers=headers)
 
     if response.status_code == 200:
