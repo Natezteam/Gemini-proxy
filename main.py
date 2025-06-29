@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -21,6 +20,7 @@ GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini
 @app.post("/gemini")
 async def chat(request: Request):
     body = await request.json()
+   print("BODY:", body)
     user_question = body.get("question", "")
 
     headers = {
