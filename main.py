@@ -5,32 +5,23 @@ import requests
 
 app = FastAPI()
 
-# Разрешаем CORS (для взаимодействия с Netlify)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
-
 @app.post("/gemini")
 async def chat(request: Request):
     body = await request.json()
-   print("BODY:", body)
+    print("BODY:", body)  # 👈 ЛОГ — ОЧЕНЬ ВАЖЕН
+
     user_question = body.get("question", "")
 
     headers = {
         "Content-Type": "application/json"
     }
+
     payload = {
         "contents": [
             {"parts": [{"text": user_question}]}
         ]
     }
+
     response = requests.post(f"{GEMINI_API_URL}?key={GEMINI_API_KEY}", json=payload, headers=headers)
 
     if response.status_code == 200:
@@ -40,6 +31,6 @@ async def chat(request: Request):
         except (KeyError, IndexError):
             answer = "Ошибка: пустой ответ от Gemini."
     else:
+        print("DEBUG GEMINI ERROR:", response.text)  # 👈 Покажи ответ, если ошибка
         answer = f"Ошибка Gemini API: {response.status_code}"
 
-    return {"answer": answer}
